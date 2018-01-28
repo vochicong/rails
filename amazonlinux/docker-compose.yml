@@ -1,0 +1,7 @@
+version: '3'
+services:
+  rails:
+    image: vochicong/rails:5.1.4-ruby2.4.3-amzn2-node-chrome
+    build:
+      context: .
+      dockerfile: amazonlinux/Dockerfile

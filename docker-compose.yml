@@ -1,0 +1,27 @@
+version: '3'
+services:
+  rails:
+    image: amazonlinux:2
+    volumes:
+    - .:/app
+    working_dir: /app
+    ports:
+    - 3000:3000 # Rails server
+    volumes:
+    - .:/app
+    links:
+    - db
+    entrypoint:
+    - /usr/local/bin/wait-for-it.sh
+    - db:3306
+    - --timeout=20
+    - --
+    - scripts/ep-rails-sample.sh
+    tty: true           # byebug用
+    stdin_open: true    # byebug用
+
+  db:
+    image: mariadb:10.0.24
+    environment:
+      # Don't set MYSQL_PWD o.w. only connection from 127.0.0.1 is allowed
+      - MYSQL_ROOT_PASSWORD=password
