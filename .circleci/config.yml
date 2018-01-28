@@ -1,0 +1,49 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.4-node-browsers
+        environment:
+          BUILD_IMAGE: vochicong/rails:5.1.4-ruby2.4.3-amzn2-node-chrome
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          reusable: true    # default - false
+          exclusive: true   # default - true
+
+      - restore_cache:
+          keys:
+            - v1-{{ arch }}
+          paths:
+            - ~/dockercaches/app.tar
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i ~/dockercaches/app.tar | true
+
+      - run:
+          name: Build application Docker image
+          command: |
+            docker build --cache-from=app -t app \
+              -f amazonlinux/Dockerfile .
+
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p ~/dockercaches
+            docker save -o ~/dockercaches/app.tar app
+      - save_cache:
+          key: v1-{{ arch }}-{{ epoch }}
+          paths:
+            - ~/dockercaches/app.tar
+
+      - deploy:
+          name: Push application Docker image
+          command: |
+            docker login -u vochicong -p $DOCKER_PASS
+            docker tag app ${BUILD_IMAGE}
+            docker push ${BUILD_IMAGE}
