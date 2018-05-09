@@ -5,6 +5,7 @@ set -x
 
 brew update
 brew bundle --file=mac/Brewfile
+brew link --overwrite --force node@8
 
 scripts/ruby-rails.sh
 scripts/rails-sample.sh
